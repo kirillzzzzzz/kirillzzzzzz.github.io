@@ -4,7 +4,7 @@ let levels;
 let game;
 let counterClickToCard = 0;
 // step - хранит кол-во ходов за уровень, обнуляется при инициализации уровня
-let step; 
+let step;
 class ConfettiAnimation {
 	#container;
 
@@ -335,7 +335,7 @@ class MemoryGame {
 		btnUI.appendChild(btnUIClue);
 
 		const clueImage = document.createElement('img');
-		clueImage.src = '/image/icons/(22).png';
+		clueImage.src = '../image/icons/(22).png';
 		clueImage.classList.add('memory-buttons__btn-clue-image');
 		btnUIClue.appendChild(clueImage);
 
@@ -467,7 +467,7 @@ class MemoryGame {
 
 			const cardBack = document.createElement('div');
 			cardBack.classList.add('card-face', 'card-back');
-			cardBack.style.background = `url('/image/cards-list/${card.value}.png') 50% 50%/cover no-repeat`;
+			cardBack.style.background = `url('../image/cards-list/${card.value}.png') 50% 50%/cover no-repeat`;
 			cardInner.appendChild(cardBack);
 
 			const cardWrapElement = document.createElement('div');
