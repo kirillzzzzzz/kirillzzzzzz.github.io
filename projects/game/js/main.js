@@ -486,7 +486,7 @@ class MemoryGame {
 		// обработчик нажатия
 		btnUICount.addEventListener('click', () => {
 			if (!this.noMovesLeft) return;
-			this.showNoMovesModal(); // метод для вызова модалки "нет ходов"
+			this.showNoMovesModal();
 		});
 
 
@@ -513,7 +513,7 @@ class MemoryGame {
 
 		if (this.turns === 0) {
 			this.noMovesLeft = true;
-			this.showNoMovesModal(); // показать модалку
+			this.showNoMovesModal();
 		}
 	}
 
@@ -535,10 +535,10 @@ class MemoryGame {
 			});
 
 			this.btnUICount = btnUICount;
-			this.turns = 3;
+			this.turns = 4;
 		} else {
 			// Если кнопка уже есть — сбрасываем счётчик
-			this.turns = 3;
+			this.turns = 4;
 			this.btnUICount.textContent = '50';
 		}
 
@@ -723,7 +723,7 @@ class MemoryGame {
 		modal.setBody(createElement(`
 		<div class="modal__body-wrap">
 			<div class="modal__text">
-				<span>Добавь 50 ходов или перемешай карточки</span>
+				<span>Добавь 20 ходов или перемешай карточки</span>
 			</div>
 			<div class="modal__btn-wrap">
 				<div class="modal__btn"><button class="modal__btn-insert btn-add-turns"><span>добавить</span></button></div>
@@ -735,7 +735,7 @@ class MemoryGame {
 
 		const btnAddTurns = document.querySelector('.btn-add-turns');
 		btnAddTurns.addEventListener('click', () => {
-			this.turns += 50;
+			this.turns += 20;
 			this.btnUICount.textContent = String(this.turns).padStart(2, '0');
 			this.noMovesLeft = false;
 			modal.close();
@@ -861,6 +861,11 @@ const soundManager = new SoundManager();
 function again() {
 	counterClickToCard = 0;
 
+	const loader = new Loader();
+	loader.show();
+
+	game.initializeGame(); // создать карты
+
 	// удалим старые кнопки
 	let oldButtons = document.querySelectorAll('.memory-buttons__btn');
 	oldButtons.forEach(btn => btn.remove());
@@ -873,7 +878,8 @@ function again() {
 	if (game.btnUICount) {
 		game.btnUICount.textContent = '50';
 	}
-	game.initializeGame(); // создать карты
+
+	loader.hide();
 
 	// теперь показать их волной и запустить отсчёт
 	game.startLevelIntro();
