@@ -513,7 +513,6 @@ class MemoryGame {
 
 		if (this.turns === 0) {
 			this.noMovesLeft = true;
-			this.showNoMovesModal();
 		}
 	}
 
@@ -825,11 +824,6 @@ class Memory {
 	}
 
 	updateCardView(card) {
-		if (this.noMovesLeft && card && !card.isMatched) {
-			this.showNoMovesModal();
-			return;
-		}
-
 		const cardElement = document.querySelector(`[data-index="${this.cards.indexOf(card)}"]`);
 		cardElement.classList.toggle('is-selected', card.isSelected);
 		cardElement.classList.toggle('is-matched', card.isMatched);
