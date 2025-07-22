@@ -535,10 +535,10 @@ class MemoryGame {
 			});
 
 			this.btnUICount = btnUICount;
-			this.turns = 4;
+			this.turns = 50;
 		} else {
 			// Если кнопка уже есть — сбрасываем счётчик
-			this.turns = 4;
+			this.turns = 50;
 			this.btnUICount.textContent = '50';
 		}
 
