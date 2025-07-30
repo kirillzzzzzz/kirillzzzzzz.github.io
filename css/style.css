@@ -262,12 +262,12 @@
 .example-elem-right__description {
   font-size: 20px;
   font-weight: 200;
-  line-height: 111.1111111111%;
+  line-height: 125%;
 }
 @media (max-width: 479.98px) {
   .example-elem-right__description {
     font-size: 18px;
-    line-height: 122.2222222222%;
+    line-height: 137.5%;
   }
 }
 
