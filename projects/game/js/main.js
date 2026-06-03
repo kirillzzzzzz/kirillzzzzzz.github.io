@@ -3,8 +3,7 @@ let arrSetCards = null;
 let levels;
 let game;
 let counterClickToCard = 0;
-// step - хранит кол-во ходов за уровень, обнуляется при инициализации уровня
-let step;
+let step; 
 class SoundManager {
 	isMuted = false;
 
@@ -48,7 +47,7 @@ class ConfettiAnimation {
 
 	constructor() {
 		this.#container = this.#createContainer();
-		this.#createConfetti(150); // можно менять кол-во
+		this.#createConfetti(150);
 	}
 
 	#createContainer() {
@@ -72,14 +71,14 @@ class ConfettiAnimation {
 
 		for (let i = 0; i < count; i++) {
 			const el = document.createElement('div');
-			const size = Math.floor(Math.random() * 8) + 2; // 2–10px
+			const size = Math.floor(Math.random() * 8) + 2;
 			const left = Math.random() * 100;
 			const rotate = Math.random() * 360;
 			const color = colors[Math.floor(Math.random() * colors.length)];
 			const opacity = 0.5 + Math.random() * 0.5;
-			const duration = 4 + Math.random() * 3; // 4–7s
+			const duration = 4 + Math.random() * 3;
 			const delay = Math.random() * 2;
-			const drift = (Math.random() * 30) - 15; // отклонение влево/вправо
+			const drift = (Math.random() * 30) - 15;
 
 			Object.assign(el.style, {
 				position: 'absolute',
@@ -125,7 +124,6 @@ class ConfettiAnimation {
 		}
 	}
 }
-
 
 class Modal {
 
@@ -181,7 +179,6 @@ class Modal {
 			this.#elem.querySelector('.modal__header').append(modalBody);
 		};
 
-
 		this.#elem.querySelector('.modal__body').append(value);
 	}
 
@@ -191,7 +188,6 @@ class Modal {
 		bodyDoc.classList.add('is-modal-open');
 
 		setTimeout(function () {
-			// Применение класса для плавного появления
 			let x = document.querySelector('.modal');
 			let y = document.querySelector('.modal__overlay');
 			x.style.opacity = 1;
@@ -228,17 +224,18 @@ class Modal {
 		this.close();
 	}
 }
+
+
+
 class Loader {
 	#elem = '';
 
 	constructor() {
 		this.#elem = this.#render();
-		console.log('[Loader] Конструктор: элемент создан');
 	}
 
 	#render() {
 		let elem = createElement(this.#template());
-		console.log('[Loader] Render: элемент отрендерен');
 		return elem;
 	}
 
@@ -251,28 +248,19 @@ class Loader {
 	}
 
 	show() {
-		console.log('[Loader] show(): добавление лоадера в DOM');
 		document.body.append(this.#elem);
-		console.log('[Loader] show(): this.#elem =', this.#elem);
-
 	}
 
 	hide() {
-		console.log('[Loader] hide(): скрытие лоадера');
 		this.#elem.classList.add('loader--hide');
 		setTimeout(() => {
 			this.#elem.remove();
-			console.log('[Loader] hide(): удаление из DOM');
-		}, 700); // чуть больше, чем transition
+		}, 700);
 	}
 
-
 	waitForBackgroundImages(callback) {
-		console.log('[Loader] waitForBackgroundImages(): старт ожидания');
 
-		// Берем только карточки с лицевой стороной
 		const elements = document.querySelectorAll('.card-face.card-back');
-		console.log(`[Loader] Найдено лицевых сторон: ${elements.length}`);
 
 		let urls = new Set();
 
@@ -280,23 +268,16 @@ class Loader {
 			const style = window.getComputedStyle(el);
 			const bg = style.backgroundImage;
 
-			console.log(`[Loader] Стиль background: ${bg}`);
-
-			const match = bg.match(/url\((['"]?)(.*?)\1\)/); // улучшенная регулярка
+			const match = bg.match(/url\((['"]?)(.*?)\1\)/);
 			if (match && match[2]) {
 				const url = match[2];
-				console.log(`[Loader] Найдено изображение: ${url}`);
 				urls.add(url);
-			} else {
-				console.warn(`[Loader] Не удалось извлечь URL из background: ${bg}`);
 			}
 		});
 
-		urls = [...urls]; // превращаем Set обратно в массив
-		console.log(`[Loader] Уникальных URL к загрузке: ${urls.length}`);
+		urls = [...urls];
 
 		if (urls.length === 0) {
-			console.log('[Loader] Нет изображений для загрузки, вызываем callback сразу');
 			callback();
 			return;
 		}
@@ -306,14 +287,11 @@ class Loader {
 			const img = new Image();
 			img.onload = img.onerror = () => {
 				loaded++;
-				console.log(`[Loader] Загружено: ${loaded}/${urls.length}`);
 				if (loaded === urls.length) {
-					console.log('[Loader] Все изображения загружены, вызываем callback');
 					callback();
 				}
 			};
 			img.src = src;
-			console.log(`[Loader] Загружаем: ${src}`);
 		});
 	}
 }
@@ -334,7 +312,6 @@ class MemoryGame {
 
 	buttons() {
 
-		// Удалить все предыдущие кнопки, чтобы не было дубликатов
 		const oldBtns = document.querySelectorAll('.memory-buttons__btn');
 		oldBtns.forEach(btn => btn.remove());
 
@@ -360,16 +337,12 @@ class MemoryGame {
 			const btnAudio = document.querySelector('.btn-audio');
 			const audioText = btnAudio.querySelector('span');
 
-			// Установим правильный текст при открытии
 			audioText.textContent = soundManager.isMuted ? 'звук вкл' : 'звук выкл';
 
 			btnAudio.addEventListener('click', () => {
 				soundManager.toggleMute();
-
-				// Обновим текст после переключения
 				audioText.textContent = soundManager.isMuted ? 'звук вкл' : 'звук выкл';
 			});
-
 
 			let x = document.querySelector('.btn-new');
 			x.style.display = 'block';
@@ -388,7 +361,7 @@ class MemoryGame {
 		btnUI.appendChild(btnUIClue);
 
 		const clueImage = document.createElement('img');
-		clueImage.src = 'image/icons/(22).png';
+		clueImage.src = '/image/icons/(22).png';
 		clueImage.classList.add('memory-buttons__btn-clue-image');
 		btnUIClue.appendChild(clueImage);
 
@@ -400,7 +373,6 @@ class MemoryGame {
 			const isCharged = btnUIClue.classList.contains('memory-buttons__btn-clue--visible');
 
 			if (isCharged) {
-				// 🔊 Полностью заряжена — играем первый звук
 				soundManager.playMatch();
 
 				let cardsGame = game.cards;
@@ -460,10 +432,9 @@ class MemoryGame {
 					});
 				}
 			} else {
-				// ⛔ Уже дрожит — не играем звук повторно
 				if (btnUIClue.classList.contains('shake-horizontal')) return;
 
-				soundManager.playErr(); // 🔊 второй звук
+				soundManager.playErr();
 
 				btnUIClue.classList.add('shake-horizontal');
 
@@ -474,25 +445,21 @@ class MemoryGame {
 
 		});
 
-		// ===== КНОПКА ОТСЧЕТА (CountTurn) =====
 		const btnUICount = document.createElement('div');
 		btnUICount.classList.add('memory-buttons__btn', 'memory-buttons__btn-count');
-		btnUICount.textContent = String(this.turns || 50).padStart(2, '0'); // отобразить текущие ходы
+		btnUICount.textContent = String(this.turns || 50).padStart(2, '0');
 		btnUI.appendChild(btnUICount);
 
-		// сохраняем ссылку
 		this.btnUICount = btnUICount;
 
-		// обработчик нажатия
 		btnUICount.addEventListener('click', () => {
 			if (!this.noMovesLeft) return;
 			this.showNoMovesModal();
 		});
 
-
 		setTimeout(function () {
 			let x = document.querySelectorAll('.memory-buttons__btn');
-			x.forEach(btn => btn.style.opacity = 1); // автоматически применится ко всем
+			x.forEach(btn => btn.style.opacity = 1);
 
 		}, 100);
 	}
@@ -520,7 +487,6 @@ class MemoryGame {
 		this.cards = [];
 		this.memoryGameContainer.innerHTML = '';
 
-		// Если кнопка уже есть, не создаём снова
 		if (!this.btnUICount) {
 			const btnUI = document.querySelector('.memory-buttons');
 			const btnUICount = document.createElement('div');
@@ -536,11 +502,9 @@ class MemoryGame {
 			this.btnUICount = btnUICount;
 			this.turns = 50;
 		} else {
-			// Если кнопка уже есть — сбрасываем счётчик
 			this.turns = 50;
 			this.btnUICount.textContent = '50';
 		}
-
 
 		for (const value of this.cardValues[0]) {
 			this.cards.push(new Card(value));
@@ -564,7 +528,7 @@ class MemoryGame {
 
 			const cardBack = document.createElement('div');
 			cardBack.classList.add('card-face', 'card-back');
-			cardBack.style.background = `url('image/cards-list/${card.value}.png') 50% 50%/cover no-repeat`;
+			cardBack.style.background = `url('/image/cards-list/${card.value}.png') 50% 50%/cover no-repeat`;
 			cardInner.appendChild(cardBack);
 
 			const cardWrapElement = document.createElement('div');
@@ -575,24 +539,20 @@ class MemoryGame {
 			this.memoryGameContainer.appendChild(cardWrapElement);
 
 			setTimeout(function () {
-				// Применение класса для плавного появления
 				cardWrapElement.style.opacity = 1;
 			}, 100);
 
 			cardElement.addEventListener('click', () => {
-				// ⛔ если ходов нет — не даём взаимодействовать, только модалка
 				if (this.turns === 0) {
 					this.showNoMovesModal();
 					return;
 				}
 
-				// ✅ обычное поведение
 				if (!card.isSelected) {
 					this.memoryGame.selectCard(this.cards.indexOf(card));
 					this.updateCardView(card);
 				}
 			});
-
 
 			step = 0;
 		});
@@ -644,7 +604,7 @@ class MemoryGame {
 	}
 
 	startLevelIntro(callback) {
-		this.setInteractionBlocked(true); // 🚫 блокируем
+		this.setInteractionBlocked(true);
 		this.allowTurnDecrement = false;
 
 		const allCardElements = document.querySelectorAll('.memory-card-wrap');
@@ -666,7 +626,7 @@ class MemoryGame {
 				});
 
 				this.allowTurnDecrement = true;
-				this.setInteractionBlocked(false); // ✅ разблокируем
+				this.setInteractionBlocked(false);
 
 				if (typeof callback === 'function') callback();
 			});
@@ -771,12 +731,6 @@ class Memory {
 		this.selectedCards.push(card);
 		this.indexArr.push(index);
 		if (this.selectedCards.length === 2) this.checkMatch();
-
-		// let eventWinner = new CustomEvent('winnerLevel', {
-		// 	bubbles: true
-		// });
-
-		// document.dispatchEvent(eventWinner);
 	}
 
 	checkMatch() {
@@ -805,7 +759,6 @@ class Memory {
 
 			if (card1.value === card2.value) {
 
-				// Тут ловим совпадение 2х карточек
 				if (this.indexArr.length == 2) {
 					soundManager.playMatch();
 					let cardElement1 = document.querySelector(`[data-index="${this.indexArr[0]}"]`);
@@ -844,6 +797,9 @@ class Card {
 		this.isMatched = false;
 	}
 }
+
+// console.log();
+
 function createElement(html) {
 
 	const div = document.createElement('div');
@@ -858,13 +814,11 @@ function again() {
 	const loader = new Loader();
 	loader.show();
 
-	game.initializeGame(); // создать карты
+	game.initializeGame();
 
-	// удалим старые кнопки
 	let oldButtons = document.querySelectorAll('.memory-buttons__btn');
 	oldButtons.forEach(btn => btn.remove());
 
-	// создаём заново кнопки (включая CountTurn) и сохраняем ссылку
 	game.buttons();
 	game.turns = 50;
 	game.noMovesLeft = false;
@@ -875,7 +829,6 @@ function again() {
 
 	loader.hide();
 
-	// теперь показать их волной и запустить отсчёт
 	game.startLevelIntro();
 
 	const modal = document.querySelector('.modal');
@@ -884,16 +837,13 @@ function again() {
 	document.body.classList.remove('is-modal-open');
 }
 
-
 function next() {
 	game.cardValues.shift();
 	counterClickToCard = 0;
 
-	// удалим старые кнопки
 	let oldButtons = document.querySelectorAll('.memory-buttons__btn');
 	oldButtons.forEach(btn => btn.remove());
 
-	// создаём заново кнопки (включая CountTurn) и сохраняем ссылку
 	game.buttons();
 	game.turns = 50;
 	game.noMovesLeft = false;
@@ -917,14 +867,12 @@ function next() {
 
 		setTimeout(() => {
 			game.startLevelIntro(() => {
-				// показать кнопки только после волны
 				const btns = document.querySelectorAll('.memory-buttons__btn');
 				btns.forEach(btn => btn.style.opacity = 1);
 			});
 		}, 500);
 	});
 }
-
 
 if (arrSetCards === null) {
 	let modalStart = new Modal();
@@ -934,7 +882,6 @@ if (arrSetCards === null) {
 	</div>`));
 
 	function start() {
-		// Создаю массив с массивами в формате YYY/XX, YYY/XX, YYY/XX...
 		arrSetCards = [];
 
 		for (let i = 1; i <= 07; i++) {
@@ -949,7 +896,6 @@ if (arrSetCards === null) {
 			arrSetCards.push(subArray);
 		}
 
-		// fn для перемешивания массива с массивами
 		function shuffleArray(array) {
 			for (let i = array.length - 1; i > 0; i--) {
 				const j = Math.floor(Math.random() * (i + 1));
@@ -957,8 +903,6 @@ if (arrSetCards === null) {
 			}
 			return array;
 		}
-
-		// const shuffledArray = shuffleArray(arrSetCards);
 
 		const shuffledArray = shuffleArray(arrSetCards);
 
