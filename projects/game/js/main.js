@@ -361,7 +361,7 @@ class MemoryGame {
 		btnUI.appendChild(btnUIClue);
 
 		const clueImage = document.createElement('img');
-		clueImage.src = 'https://kirillzzzzzz.github.io/projects/game/image/icons/(22).png';
+		clueImage.src = './image/icons/(22).png';
 		clueImage.classList.add('memory-buttons__btn-clue-image');
 		btnUIClue.appendChild(clueImage);
 
