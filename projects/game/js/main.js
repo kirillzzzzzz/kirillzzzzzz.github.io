@@ -362,7 +362,7 @@ class MemoryGame {
 		btnUI.appendChild(btnUIClue);
 
 		const clueImage = document.createElement('img');
-		clueImage.src = '../image/icons/(22).png';
+		clueImage.src = './image/icons/(22).png';
 		clueImage.classList.add('memory-buttons__btn-clue-image');
 		btnUIClue.appendChild(clueImage);
 
@@ -537,7 +537,7 @@ class MemoryGame {
 			const cardBack = document.createElement('div');
 			cardBack.classList.add('card-face', 'card-back');
 			console.log(card.value);
-			cardBack.style.background = `url('../image/cards-list/${card.value}.png') 50% 50%/cover no-repeat`;
+			cardBack.style.background = `url('./image/cards-list/${card.value}.png') 50% 50%/cover no-repeat`;
 			cardInner.appendChild(cardBack);
 
 			const cardWrapElement = document.createElement('div');
