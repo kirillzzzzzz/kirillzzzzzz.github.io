@@ -557,7 +557,7 @@ body {
   pointer-events: none;
 }
 .card-face:first-child {
-  background-image: url("/image/card-back.png");
+  background-image: url("../image/card-back.png");
   background-repeat: no-repeat;
   background-size: 84%;
   background-position: center center;
