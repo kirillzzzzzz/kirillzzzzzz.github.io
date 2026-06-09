@@ -536,7 +536,6 @@ class MemoryGame {
 
 			const cardBack = document.createElement('div');
 			cardBack.classList.add('card-face', 'card-back');
-			console.log(card.value);
 			cardBack.style.background = `url('./image/cards-list/${card.value}.png') 50% 50%/cover no-repeat`;
 			cardInner.appendChild(cardBack);
 
