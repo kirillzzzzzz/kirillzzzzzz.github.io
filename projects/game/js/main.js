@@ -5,6 +5,7 @@ let game;
 let counterClickToCard = 0;
 let step;
 let totalTurnsUsed = 0;
+let gameReadySent = false;
 class SoundManager {
 	isMuted = false;
 
@@ -206,6 +207,9 @@ class Modal {
 
 		bodyDoc.classList.remove('is-modal-open');
 		modalElem.remove();
+		if (window.ysdk) {
+			window.ysdk.features.GameplayAPI.start();
+		}
 		bodyDoc.removeEventListener('keydown', this.#onRemoveEsc);
 
 	}
@@ -323,6 +327,10 @@ class MemoryGame {
 		btnUI.appendChild(btnUIPause);
 		btnUIPause.addEventListener('click', () => {
 
+			if (window.ysdk) {
+				window.ysdk.features.GameplayAPI.stop();
+			}
+
 			let modalPause = new Modal();
 			modalPause.setTitle(`Уровень: ${(levels - arrSetCards.length) + 1} / 12`);
 			modalPause.setBody(createElement(`<div class="modal__btn-wrap">
@@ -362,7 +370,7 @@ class MemoryGame {
 		btnUI.appendChild(btnUIClue);
 
 		const clueImage = document.createElement('img');
-		clueImage.src = './image/icons/(22).png';
+		clueImage.src = '/image/icons/(22).png';
 		clueImage.classList.add('memory-buttons__btn-clue-image');
 		btnUIClue.appendChild(clueImage);
 
@@ -414,6 +422,9 @@ class MemoryGame {
 				} else if (x.length === 2) {
 					return;
 				} else {
+					if (window.ysdk) {
+						window.ysdk.features.GameplayAPI.stop();
+					}
 					let modalClue = new Modal();
 					modalClue.setTitle(`Упс..`);
 					modalClue.setBody(createElement(`<div class="modal__body-wrap">
@@ -536,7 +547,7 @@ class MemoryGame {
 
 			const cardBack = document.createElement('div');
 			cardBack.classList.add('card-face', 'card-back');
-			cardBack.style.background = `url('./image/cards-list/${card.value}.png') 50% 50%/cover no-repeat`;
+			cardBack.style.background = `url('/image/cards-list/${card.value}.png') 50% 50%/cover no-repeat`;
 			cardInner.appendChild(cardBack);
 
 			const cardWrapElement = document.createElement('div');
@@ -636,6 +647,16 @@ class MemoryGame {
 				this.allowTurnDecrement = true;
 				this.setInteractionBlocked(false);
 
+				if (!gameReadySent && window.ysdk) {
+					gameReadySent = true;
+					window.ysdk.features.LoadingAPI?.ready();
+				}
+
+				if (window.ysdk) {
+					window.ysdk.features.GameplayAPI.start()
+						;
+				}
+
 				if (typeof callback === 'function') callback();
 			});
 		}, allCardElements.length * 100 + 300);
@@ -685,6 +706,9 @@ class MemoryGame {
 	}
 
 	showNoMovesModal() {
+		if (window.ysdk) {
+			window.ysdk.features.GameplayAPI.stop();
+		}
 		const modal = new Modal();
 		modal.setTitle('Ходы закончились!');
 		modal.setBody(createElement(`
@@ -693,7 +717,7 @@ class MemoryGame {
 				<span>Добавь 20 ходов или перемешай карточки</span>
 			</div>
 			<div class="modal__btn-wrap">
-				<div class="modal__btn"><button class="modal__btn-insert btn-add-turns"><span>добавить</span></button></div>
+				<div class="modal__btn"><button class="modal__btn-insert btn-add-turns"><span>+20 за ролик</span></button></div>
 				<div class="modal__btn"><button onclick="again()" class="modal__btn-insert btn-again"><span>перемешать</span></button></div>
 			</div>
 		</div>
@@ -747,8 +771,8 @@ class Memory {
 			card1.isMatched = true;
 			card2.isMatched = true;
 			this.pairsFound++;
-			if (this.pairsFound === this.cards.length / 2) {
-				// if (this.pairsFound === 1) {
+			// if (this.pairsFound === this.cards.length / 2) {
+			if (this.pairsFound === 1) {
 				this.isGameOver = true;
 				setTimeout(function () {
 					let eventWinner = new CustomEvent('winnerLevel', {
@@ -812,9 +836,99 @@ function createElement(html) {
 	div.innerHTML = html;
 	return div.firstElementChild;
 };
-const turnsByLevel = [48, 46, 44, 43, 42, 41, 40, 39, 38, 37, 36, 35];
+const turnsByLevel = [2, 46, 44, 43, 42, 41, 40, 39, 38, 37, 36, 35];
+
+function start() {
+	arrSetCards = [];
+	totalTurnsUsed = 0;
+
+	for (let i = 1; i <= 12; i++) {
+		let currentPrefix = String(i).padStart(3, '0');
+		let subArray = [];
+
+		for (let j = 1; j <= 12; j++) {
+			let month = '(' + j + ')';
+			subArray.push(currentPrefix + '/' + month);
+		}
+
+		arrSetCards.push(subArray);
+	}
+
+	function shuffleArray(array) {
+		for (let i = array.length - 1; i > 0; i--) {
+			const j = Math.floor(Math.random() * (i + 1));
+			[array[i], array[j]] = [array[j], array[i]];
+		}
+		return array;
+	}
+
+	const shuffledArray = shuffleArray(arrSetCards);
+
+	levels = arrSetCards.length;
+	game = new MemoryGame(arrSetCards);
+	saveProgress();
+
+	const loader = new Loader();
+	loader.show();
+
+	game.initializeGame();
+
+	document.querySelector('.modal').remove();
+	loader.waitForBackgroundImages(() => {
+		loader.hide();
+
+		setTimeout(() => {
+			game.startLevelIntro();
+		}, 500);
+	});
+
+	document.body?.classList.remove('is-modal-open');
+}
+
+function saveProgress() {
+	localStorage.setItem('memo_progress', JSON.stringify({
+		arrSetCards,
+		totalTurnsUsed
+	}));
+}
+
+function loadProgress() {
+	const data = localStorage.getItem('memo_progress');
+
+	if (!data) return null;
+
+	try {
+		return JSON.parse(data);
+	} catch {
+		return null;
+	}
+}
+
+function clearProgress() {
+	localStorage.removeItem('memo_progress');
+}
+
+// document.addEventListener('contextmenu', (e) => {
+// 	e.preventDefault();
+// });
 
 const soundManager = new SoundManager();
+
+document.addEventListener('visibilitychange', () => {
+	if (document.hidden) {
+		Howler.mute(true);
+	} else {
+		Howler.mute(soundManager.isMuted);
+	}
+});
+
+window.addEventListener('game_api_pause', () => {
+	Howler.mute(true);
+});
+
+window.addEventListener('game_api_resume', () => {
+	Howler.mute(soundManager.isMuted);
+});
 
 function again() {
 	counterClickToCard = 0;
@@ -850,6 +964,7 @@ function again() {
 
 function next() {
 	game.cardValues.shift();
+	saveProgress();
 	counterClickToCard = 0;
 
 	let oldButtons = document.querySelectorAll('.memory-buttons__btn');
@@ -880,40 +995,40 @@ function next() {
 	});
 }
 
-if (arrSetCards === null) {
+const savedGame = loadProgress();
+
+if (savedGame) {
+
 	let modalStart = new Modal();
-	modalStart.setTitle('Новая игра!');
-	modalStart.setBody(createElement(`<div class="modal__btn-wrap">
-	<div class="modal__btn"><button onclick="start()" class="modal__btn-insert btn-start"><span>играть</span></button></div>
-	</div>`));
 
-	function start() {
-		arrSetCards = [];
-		totalTurnsUsed = 0;
+	modalStart.setTitle('Продолжить игру?');
 
-		for (let i = 1; i <= 12; i++) {
-			let currentPrefix = String(i).padStart(3, '0');
-			let subArray = [];
+	modalStart.setBody(createElement(`
+		<div class="modal__btn-wrap">
+			<div class="modal__btn">
+				<button class="modal__btn-insert btn-continue-game">
+					<span>Продолжить</span>
+				</button>
+			</div>
 
-			for (let j = 1; j <= 12; j++) {
-				let month = '(' + j + ')';
-				subArray.push(currentPrefix + '/' + month);
-			}
+			<div class="modal__btn">
+				<button class="modal__btn-insert btn-new-game">
+					<span>Новая игра</span>
+				</button>
+			</div>
+		</div>
+	`));
 
-			arrSetCards.push(subArray);
-		}
+	modalStart.removeElement();
+	modalStart.open();
 
-		function shuffleArray(array) {
-			for (let i = array.length - 1; i > 0; i--) {
-				const j = Math.floor(Math.random() * (i + 1));
-				[array[i], array[j]] = [array[j], array[i]];
-			}
-			return array;
-		}
+	document.querySelector('.btn-continue-game').addEventListener('click', () => {
 
-		const shuffledArray = shuffleArray(arrSetCards);
+		arrSetCards = savedGame.arrSetCards;
+		totalTurnsUsed = savedGame.totalTurnsUsed || 0;
 
-		levels = arrSetCards.length;
+		levels = 12;
+
 		game = new MemoryGame(arrSetCards);
 
 		const loader = new Loader();
@@ -922,6 +1037,7 @@ if (arrSetCards === null) {
 		game.initializeGame();
 
 		document.querySelector('.modal').remove();
+
 		loader.waitForBackgroundImages(() => {
 			loader.hide();
 
@@ -929,24 +1045,60 @@ if (arrSetCards === null) {
 				game.startLevelIntro();
 			}, 500);
 		});
-	}
 
-	modalStart.removeElement();
-	modalStart.open();
-};
+		document.body.classList.remove('is-modal-open');
+	});
+
+	document.querySelector('.btn-new-game').addEventListener('click', () => {
+		clearProgress();
+		location.reload();
+	});
+
+} else {
+
+	if (arrSetCards === null) {
+		let modalStart = new Modal();
+		modalStart.setTitle('Новая игра!');
+		modalStart.setBody(createElement(`
+		<div class="tutorial-start modal__text">
+			<p>
+				Открывайте карточки и находите пары.
+				Используйте подсказку, чтобы увидеть вторую такую же карточку.
+				Пройдите все 12 уровней!
+			</p>
+	
+			<div class="modal__btn-wrap">
+				<div class="modal__btn">
+					<button onclick="start()" class="modal__btn-insert btn-start">
+						<span>Играть</span>
+					</button>
+				</div>
+			</div>
+		</div>
+	`));
+
+		modalStart.removeElement();
+		modalStart.open();
+	};
+
+}
+
 
 document.addEventListener('winnerLevel', () => {
+	if (window.ysdk) {
+		window.ysdk.features.GameplayAPI.stop();
+	}
 	soundManager.playWin();
 	let rank = '"Новичок"';
 
 	if (game.totalTurnsUsed >= 288 && game.totalTurnsUsed <= 348) {
 		rank = '"Легенда"';
 	} else if (game.totalTurnsUsed >= 349 && game.totalTurnsUsed <= 388) {
-		rank = '"Профи"';
-	} else if (game.totalTurnsUsed >= 389 && game.totalTurnsUsed <= 448) {
-		rank = '"Умелый"';
-	} else if (game.totalTurnsUsed >= 449 && game.totalTurnsUsed <= 488) {
 		rank = '"Мастер"';
+	} else if (game.totalTurnsUsed >= 389 && game.totalTurnsUsed <= 448) {
+		rank = '"Профи"';
+	} else if (game.totalTurnsUsed >= 449 && game.totalTurnsUsed <= 488) {
+		rank = '"Умелый"';
 	}
 	let modalWinner = new Modal();
 	if ((levels - arrSetCards.length + 1) === 12) {
@@ -969,7 +1121,7 @@ document.addEventListener('winnerLevel', () => {
 	setTimeout(() => confetti.stop(), 6000);
 
 	if (((levels - arrSetCards.length) + 1) == levels) {
-
+		clearProgress();
 		let x = document.querySelector('.btn-new');
 		let y = document.querySelector('.modal__btn');
 		x.style.display = 'block';

@@ -1,7 +1,14 @@
 @charset "UTF-8";
 @import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@100;200;300;400;500;600;700;800;900&family=Outfit:wght@100;200;300;400;500;600;700;800;900&display=swap");
-html {
+html,
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
   overflow: hidden;
+  -ms-touch-action: manipulation;
+      touch-action: manipulation;
 }
 
 body,
@@ -173,7 +180,7 @@ body,
   border-radius: 10%;
   -webkit-box-shadow: 0px 50px 100px -20px rgba(50, 50, 93, 0.25), 0px 30px 60px -30px rgba(0, 0, 0, 0.3), 0px -2px 6px 0px rgba(10, 37, 64, 0.35) inset;
           box-shadow: 0px 50px 100px -20px rgba(50, 50, 93, 0.25), 0px 30px 60px -30px rgba(0, 0, 0, 0.3), 0px -2px 6px 0px rgba(10, 37, 64, 0.35) inset;
-  background-image: url("../image/close.png");
+  background-image: url("/image/close.png");
   background-repeat: no-repeat;
   background-size: 70%;
   background-position: center center;
@@ -340,11 +347,13 @@ body {
   padding-right: 1%;
   display: -ms-grid;
   display: grid;
-  -ms-grid-columns: (1fr)[6];
+  -ms-grid-columns: 1fr 2px 1fr 2px 1fr 2px 1fr 2px 1fr 2px 1fr;
   grid-template-columns: repeat(6, 1fr);
   width: 100%;
+  gap: 2px;
 }
 .memory-game__wrap {
+  --card-size: min(15vw, 22vh);
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
@@ -358,8 +367,7 @@ body {
 
 .memory-card-wrap {
   width: 100%;
-  height: 100%;
-  padding-bottom: 100%;
+  aspect-ratio: 1/1;
   max-width: 350px;
   max-height: 350px;
   display: -webkit-box;
@@ -557,7 +565,7 @@ body {
   pointer-events: none;
 }
 .card-face:first-child {
-  background-image: url("../image/card-back.png");
+  background-image: url("/image/card-back.png");
   background-repeat: no-repeat;
   background-size: 84%;
   background-position: center center;
@@ -610,8 +618,8 @@ body {
 }
 .memory-buttons__btn {
   cursor: pointer;
-  width: 100%;
-  height: 16.5%;
+  width: calc(var(--card-size) * 0.66);
+  height: calc(var(--card-size) * 0.66);
   margin: 11% 0px;
   display: block;
   opacity: 0;
@@ -623,8 +631,8 @@ body {
   border-radius: 8%;
   -webkit-box-shadow: 0px 50px 100px -20px rgba(50, 50, 93, 0.25), 0px 30px 60px -30px rgba(0, 0, 0, 0.3), 0px -2px 6px 0px rgba(10, 37, 64, 0.35) inset;
           box-shadow: 0px 50px 100px -20px rgba(50, 50, 93, 0.25), 0px 30px 60px -30px rgba(0, 0, 0, 0.3), 0px -2px 6px 0px rgba(10, 37, 64, 0.35) inset;
-  width: 100%;
-  height: 16.5%;
+  width: calc(var(--card-size) * 0.66);
+  height: calc(var(--card-size) * 0.66);
   margin: 11% 0px;
   display: -webkit-box;
   display: -ms-flexbox;
@@ -636,7 +644,7 @@ body {
       -ms-flex-pack: center;
           justify-content: center;
   color: #fff;
-  font-size: clamp(19px, 4.6vw, 120px);
+  font-size: calc(var(--card-size) * 0.35);
   line-height: 1;
   font-weight: 700;
   cursor: pointer;
@@ -652,7 +660,7 @@ body {
   border-radius: 8%;
   -webkit-box-shadow: 0px 50px 100px -20px rgba(50, 50, 93, 0.25), 0px 30px 60px -30px rgba(0, 0, 0, 0.3), 0px -2px 6px 0px rgba(10, 37, 64, 0.35) inset;
           box-shadow: 0px 50px 100px -20px rgba(50, 50, 93, 0.25), 0px 30px 60px -30px rgba(0, 0, 0, 0.3), 0px -2px 6px 0px rgba(10, 37, 64, 0.35) inset;
-  background-image: url("../image/icons/(10).png");
+  background-image: url("/image/icons/(10).png");
   background-repeat: no-repeat;
   background-size: 70%;
   background-position: center center;
