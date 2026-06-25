@@ -12,18 +12,21 @@
 
 	<script>
 		window.addEventListener('load', async () => {
-			console.log('window.YaGames =', window.YaGames);
+
+			if (!window.YaGames) {
+				console.error('YaGames SDK not found');
+				return;
+			}
 
 			try {
-				const ysdk = await YaGames.init();
-				console.log('SDK OK', ysdk);
-
-				window.ysdk = ysdk;
+				window.ysdk = await YaGames.init();
+				console.log('SDK initialized');
 			} catch (e) {
-				console.error('SDK ERROR', e);
+				console.error('SDK init error', e);
 			}
 		});
 	</script>
+
 </head>
 
 <body>

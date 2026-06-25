@@ -6,16 +6,87 @@ let counterClickToCard = 0;
 let step;
 let totalTurnsUsed = 0;
 let gameReadySent = false;
+let isGameplayActive = false;
+let gameplayPausedByVisibility = false;
+let isAdShowing = false;
+
+function showFullscreenAd(callback) {
+
+	if (isAdShowing) return;
+
+	isAdShowing = true;
+
+	if (!window.ysdk) {
+		if (callback) callback();
+		return;
+	}
+
+	// window.ysdk.features.GameplayAPI?.stop();
+
+	window.ysdk.adv.showFullscreenAdv({
+		callbacks: {
+
+			onClose: () => {
+
+				isAdShowing = false;
+
+				// window.ysdk.features.GameplayAPI?.start();
+
+				if (callback) callback();
+			},
+
+			onError: () => {
+
+				isAdShowing = false;
+
+				// window.ysdk.features.GameplayAPI?.start();
+
+				if (callback) callback();
+			}
+		}
+	});
+}
+
+function showRewardedAd(onReward) {
+
+	if (!window.ysdk) {
+		alert('Реклама недоступна');
+		return;
+	}
+
+	// window.ysdk.features.GameplayAPI?.stop();
+
+	window.ysdk.adv.showRewardedVideo({
+		callbacks: {
+
+			onRewarded: () => {
+				if (onReward) onReward();
+			},
+
+			onClose: () => {
+				window.ysdk.features.GameplayAPI?.start();
+			},
+
+			onError: () => {
+				window.ysdk.features.GameplayAPI?.start();
+			}
+		}
+	});
+}
 class SoundManager {
 	isMuted = false;
 
 	constructor() {
+		this.isMuted = localStorage.getItem('memo_sound_muted') === 'true';
+
 		this.sounds = {
 			click: new Howl({ src: ['sounds/click.mp3'], volume: 0.6 }),
 			match: new Howl({ src: ['sounds/match.mp3'], volume: 0.4 }),
 			win: new Howl({ src: ['sounds/win.mp3'], volume: 0.7 }),
 			error: new Howl({ src: ['sounds/error.mp3'], volume: 0.7 })
 		};
+
+		Howler.mute(this.isMuted);
 	}
 
 	playClick() {
@@ -36,6 +107,12 @@ class SoundManager {
 
 	toggleMute() {
 		this.isMuted = !this.isMuted;
+
+		localStorage.setItem(
+			'memo_sound_muted',
+			this.isMuted
+		);
+
 		Howler.mute(this.isMuted);
 	}
 }
@@ -127,12 +204,27 @@ class ConfettiAnimation {
 	}
 }
 
+const RESUME_GAMEPLAY_MODAL_TYPES = [
+	'pause',
+	'hint'
+];
+
+const CLOSABLE_MODAL_TYPES = [
+	'pause',
+	'hint'
+];
+
 class Modal {
 
 	#elem = '';
 
-	constructor() {
+	constructor(type = 'default') {
+		this.type = type;
 		this.#elem = this.#render();
+
+		if (!CLOSABLE_MODAL_TYPES.includes(this.type)) {
+			this.removeElement('.modal__close');
+		}
 
 	}
 
@@ -196,7 +288,12 @@ class Modal {
 			y.style.opacity = 1;
 		}, 100);
 
-		bodyDoc.addEventListener('keydown', this.#onRemoveEsc, { once: true });
+		if (
+			CLOSABLE_MODAL_TYPES.includes(this.type)
+		) {
+			bodyDoc.addEventListener('keydown', this.#onRemoveEsc, { once: true });
+		}
+
 	}
 
 	close = () => {
@@ -207,9 +304,14 @@ class Modal {
 
 		bodyDoc.classList.remove('is-modal-open');
 		modalElem.remove();
-		if (window.ysdk) {
+
+		if (
+			window.ysdk &&
+			RESUME_GAMEPLAY_MODAL_TYPES.includes(this.type)
+		) {
 			window.ysdk.features.GameplayAPI.start();
 		}
+
 		bodyDoc.removeEventListener('keydown', this.#onRemoveEsc);
 
 	}
@@ -331,8 +433,9 @@ class MemoryGame {
 				window.ysdk.features.GameplayAPI.stop();
 			}
 
-			let modalPause = new Modal();
-			modalPause.setTitle(`Уровень: ${(levels - arrSetCards.length) + 1} / 12`);
+			let modalPause = new Modal('pause');
+			game.canResumeGameplay = true;
+			modalPause.setTitle(`Уровень: ${(levels - arrSetCards.length) + 1} из 12<br>Лимит ходов: ${turnsByLevel[levels - arrSetCards.length]}`);
 			modalPause.setBody(createElement(`<div class="modal__btn-wrap">
 				<div class="modal__btn"><button class="modal__btn-insert btn-continue"><span>продолжить</span></button></div>
 				<div class="modal__btn"><button onclick="again()" class="modal__btn-insert btn-again"><span>перемешать</span></button></div>
@@ -425,11 +528,12 @@ class MemoryGame {
 					if (window.ysdk) {
 						window.ysdk.features.GameplayAPI.stop();
 					}
-					let modalClue = new Modal();
+					let modalClue = new Modal('hint');
+					game.canResumeGameplay = true;
 					modalClue.setTitle(`Упс..`);
 					modalClue.setBody(createElement(`<div class="modal__body-wrap">
 				<div class="modal__text">
-					<span>Открой любую карточку и нажми на кнопку подсказки</span>
+					<span>Откройте любую карточку и нажмите на кнопку подсказки</span>
 				</div>
 				<div class="modal__btn-wrap">
 					<div class="modal__btn"><button class="modal__btn-insert btn-continue"><span>продолжить</span></button></div>
@@ -710,26 +814,36 @@ class MemoryGame {
 			window.ysdk.features.GameplayAPI.stop();
 		}
 		const modal = new Modal();
+		game.canResumeGameplay = false;
 		modal.setTitle('Ходы закончились!');
 		modal.setBody(createElement(`
 		<div class="modal__body-wrap">
 			<div class="modal__text">
-				<span>Добавь 20 ходов или перемешай карточки</span>
+				<span>Добавьте 20 ходов за просмотр рекламы или перемешайте карточки</span>
 			</div>
 			<div class="modal__btn-wrap">
-				<div class="modal__btn"><button class="modal__btn-insert btn-add-turns"><span>+20 за ролик</span></button></div>
-				<div class="modal__btn"><button onclick="again()" class="modal__btn-insert btn-again"><span>перемешать</span></button></div>
+				<div class="modal__btn"><button class="modal__btn-insert btn-add-turns"><span>+20 за рекламу</span></button></div>
+				<div class="modal__btn"><button onclick="againInternal()" class="modal__btn-insert btn-again"><span>перемешать</span></button></div>
 			</div>
 		</div>
 	`));
 		modal.open();
 
 		const btnAddTurns = document.querySelector('.btn-add-turns');
+
 		btnAddTurns.addEventListener('click', () => {
-			this.turns += 20;
-			this.btnUICount.textContent = String(this.turns).padStart(2, '0');
-			this.noMovesLeft = false;
-			modal.close();
+
+			showRewardedAd(() => {
+
+				this.turns += 20;
+
+				this.btnUICount.textContent =
+					String(this.turns).padStart(2, '0');
+
+				this.noMovesLeft = false;
+
+				modal.close();
+			});
 		});
 	}
 
@@ -838,7 +952,40 @@ function createElement(html) {
 };
 const turnsByLevel = [2, 46, 44, 43, 42, 41, 40, 39, 38, 37, 36, 35];
 
+function gameplayStart() {
+	if (!window.ysdk || isGameplayActive) return;
+
+	isGameplayActive = true;
+	window.ysdk.features.GameplayAPI.start();
+}
+
+document.addEventListener('visibilitychange', () => {
+
+	if (document.hidden) {
+
+		if (isGameplayActive) {
+			gameplayPausedByVisibility = true;
+			gameplayStop();
+		}
+
+	} else {
+
+		if (gameplayPausedByVisibility) {
+			gameplayPausedByVisibility = false;
+			gameplayStart();
+		}
+	}
+});
+
+function gameplayStop() {
+	if (!window.ysdk || !isGameplayActive) return;
+
+	isGameplayActive = false;
+	window.ysdk.features.GameplayAPI.stop();
+}
+
 function start() {
+	clearProgress();
 	arrSetCards = [];
 	totalTurnsUsed = 0;
 
@@ -908,9 +1055,9 @@ function clearProgress() {
 	localStorage.removeItem('memo_progress');
 }
 
-// document.addEventListener('contextmenu', (e) => {
-// 	e.preventDefault();
-// });
+document.addEventListener('contextmenu', (e) => {
+	e.preventDefault();
+});
 
 const soundManager = new SoundManager();
 
@@ -930,7 +1077,7 @@ window.addEventListener('game_api_resume', () => {
 	Howler.mute(soundManager.isMuted);
 });
 
-function again() {
+function againInternal() {
 	counterClickToCard = 0;
 
 	const loader = new Loader();
@@ -962,7 +1109,14 @@ function again() {
 	document.body.classList.remove('is-modal-open');
 }
 
-function next() {
+function again() {
+
+	showFullscreenAd(() => {
+		againInternal();
+	});
+}
+
+function nextLevelInternal() {
 	game.cardValues.shift();
 	saveProgress();
 	counterClickToCard = 0;
@@ -992,6 +1146,13 @@ function next() {
 				btns.forEach(btn => btn.style.opacity = 1);
 			});
 		}, 500);
+	});
+}
+
+function next() {
+
+	showFullscreenAd(() => {
+		nextLevelInternal();
 	});
 }
 
@@ -1062,9 +1223,7 @@ if (savedGame) {
 		modalStart.setBody(createElement(`
 		<div class="tutorial-start modal__text">
 			<p>
-				Открывайте карточки и находите пары.
-				Используйте подсказку, чтобы увидеть вторую такую же карточку.
-				Пройдите все 12 уровней!
+				Найдите все пары карточек до того, как закончатся ходы. Используйте подсказку, чтобы найти совпадение. С каждым уровнем количество доступных ходов уменьшается. Пройдите все 12 уровней и получите звание от "Новичка" до "Легенды"!
 			</p>
 	
 			<div class="modal__btn-wrap">
@@ -1101,14 +1260,15 @@ document.addEventListener('winnerLevel', () => {
 		rank = '"Умелый"';
 	}
 	let modalWinner = new Modal();
+	game.canResumeGameplay = false;
 	if ((levels - arrSetCards.length + 1) === 12) {
-		modalWinner.setTitle(`Победа! Твои ходы — ${game.totalTurnsUsed} ${rank}`);
+		modalWinner.setTitle(`Победа! Ваши ходы — ${game.totalTurnsUsed} ${rank}`);
 	} else {
-		modalWinner.setTitle(`Уровень: ${(levels - arrSetCards.length) + 1} / 12`);
+		modalWinner.setTitle(`Уровень: ${(levels - arrSetCards.length) + 1} из 12<br>Вы открыли все карточки!`);
 	};
 	modalWinner.setBody(createElement(`<div class="modal__btn-wrap">
 	<div class="modal__btn"><button onclick="next()" class="modal__btn-insert btn-next"><span>следующий</span></button></div>
-	<div class="modal__btn"><button onclick="again()" class="modal__btn-insert btn-again"><span>еще раз</span></button></div>
+	<div class="modal__btn"><button onclick="again()" class="modal__btn-insert btn-again"><span>переиграть</span></button></div>
 	<div class="modal__btn"><button onclick="start()" class="modal__btn-insert btn-new"><span>Новая игра</span></button></div>
 	</div>`));
 
