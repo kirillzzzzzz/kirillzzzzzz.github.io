@@ -20,9 +20,8 @@
 
 			try {
 				window.ysdk = await YaGames.init();
-				console.log('SDK initialized');
 			} catch (e) {
-				console.error('SDK init error', e);
+				return
 			}
 		});
 	</script>

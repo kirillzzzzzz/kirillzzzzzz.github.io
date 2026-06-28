@@ -6,69 +6,77 @@ let counterClickToCard = 0;
 let step;
 let totalTurnsUsed = 0;
 let gameReadySent = false;
-let isGameplayActive = false;
-let gameplayPausedByVisibility = false;
 let isAdShowing = false;
+let gameplayStarted = false;
+let gameplayStopped = false;
 
 function showFullscreenAd(callback) {
+
+	if (!window.ysdk) {
+		callback?.();
+		return;
+	}
 
 	if (isAdShowing) return;
 
 	isAdShowing = true;
 
-	if (!window.ysdk) {
-		if (callback) callback();
-		return;
-	}
-
-	// window.ysdk.features.GameplayAPI?.stop();
+	stopGameplay();
 
 	window.ysdk.adv.showFullscreenAdv({
+
 		callbacks: {
 
 			onClose: () => {
 
 				isAdShowing = false;
 
-				// window.ysdk.features.GameplayAPI?.start();
-
-				if (callback) callback();
+				callback?.();
 			},
 
 			onError: () => {
 
 				isAdShowing = false;
 
-				// window.ysdk.features.GameplayAPI?.start();
-
-				if (callback) callback();
+				callback?.();
 			}
 		}
 	});
 }
 
-function showRewardedAd(onReward) {
+function showRewardedAd(onReward, onClose) {
 
 	if (!window.ysdk) {
-		alert('Реклама недоступна');
 		return;
 	}
 
-	// window.ysdk.features.GameplayAPI?.stop();
+	if (isAdShowing) return;
+
+	isAdShowing = true;
+
+	stopGameplay();
 
 	window.ysdk.adv.showRewardedVideo({
+
 		callbacks: {
 
 			onRewarded: () => {
-				if (onReward) onReward();
+
+				onReward?.();
 			},
 
 			onClose: () => {
-				window.ysdk.features.GameplayAPI?.start();
+
+				isAdShowing = false;
+
+				onClose?.();
 			},
 
 			onError: () => {
-				window.ysdk.features.GameplayAPI?.start();
+
+				isAdShowing = false;
+
+				onClose?.();
 			}
 		}
 	});
@@ -305,15 +313,11 @@ class Modal {
 		bodyDoc.classList.remove('is-modal-open');
 		modalElem.remove();
 
-		if (
-			window.ysdk &&
-			RESUME_GAMEPLAY_MODAL_TYPES.includes(this.type)
-		) {
-			window.ysdk.features.GameplayAPI.start();
-		}
-
 		bodyDoc.removeEventListener('keydown', this.#onRemoveEsc);
 
+		if (RESUME_GAMEPLAY_MODAL_TYPES.includes(this.type)) {
+			startGameplay();
+		}
 	}
 
 	removeElement = () => {
@@ -430,7 +434,7 @@ class MemoryGame {
 		btnUIPause.addEventListener('click', () => {
 
 			if (window.ysdk) {
-				window.ysdk.features.GameplayAPI.stop();
+				stopGameplay();
 			}
 
 			let modalPause = new Modal('pause');
@@ -438,7 +442,7 @@ class MemoryGame {
 			modalPause.setTitle(`Уровень: ${(levels - arrSetCards.length) + 1} из 12<br>Лимит ходов: ${turnsByLevel[levels - arrSetCards.length]}`);
 			modalPause.setBody(createElement(`<div class="modal__btn-wrap">
 				<div class="modal__btn"><button class="modal__btn-insert btn-continue"><span>продолжить</span></button></div>
-				<div class="modal__btn"><button onclick="again()" class="modal__btn-insert btn-again"><span>перемешать</span></button></div>
+				<div class="modal__btn"><button onclick="againInternal()" class="modal__btn-insert btn-again"><span>перемешать</span></button></div>
 				<div class="modal__btn"><button onclick="" class="modal__btn-insert btn-audio"><span>звук выкл</span></button></div>
 				<div class="modal__btn"><button onclick="start()" class="modal__btn-insert btn-new"><span>Новая игра</span></button></div>
 			</div>
@@ -464,6 +468,7 @@ class MemoryGame {
 
 			function closeContinue() {
 				modalPause.close();
+				startGameplay();
 				btnContinue.removeEventListener('click', closeContinue);
 			}
 		});
@@ -526,7 +531,7 @@ class MemoryGame {
 					return;
 				} else {
 					if (window.ysdk) {
-						window.ysdk.features.GameplayAPI.stop();
+						stopGameplay();
 					}
 					let modalClue = new Modal('hint');
 					game.canResumeGameplay = true;
@@ -544,6 +549,7 @@ class MemoryGame {
 					let btnContinue = document.querySelector('.btn-continue');
 					btnContinue.addEventListener('click', function closeContinue() {
 						modalClue.close();
+						startGameplay();
 						btnContinue.removeEventListener('click', closeContinue);
 					});
 				}
@@ -594,6 +600,8 @@ class MemoryGame {
 		this.btnUICount.textContent = String(this.turns).padStart(2, '0');
 
 		this.totalTurnsUsed++;
+		totalTurnsUsed = this.totalTurnsUsed;
+		saveProgress();
 
 		if (this.turns === 0) {
 			this.noMovesLeft = true;
@@ -757,8 +765,7 @@ class MemoryGame {
 				}
 
 				if (window.ysdk) {
-					window.ysdk.features.GameplayAPI.start()
-						;
+					startGameplay();
 				}
 
 				if (typeof callback === 'function') callback();
@@ -810,8 +817,11 @@ class MemoryGame {
 	}
 
 	showNoMovesModal() {
+
+		soundManager.playErr();
+
 		if (window.ysdk) {
-			window.ysdk.features.GameplayAPI.stop();
+			stopGameplay();
 		}
 		const modal = new Modal();
 		game.canResumeGameplay = false;
@@ -833,17 +843,26 @@ class MemoryGame {
 
 		btnAddTurns.addEventListener('click', () => {
 
-			showRewardedAd(() => {
+			showRewardedAd(
 
-				this.turns += 20;
+				() => {
 
-				this.btnUICount.textContent =
-					String(this.turns).padStart(2, '0');
+					this.turns += 20;
 
-				this.noMovesLeft = false;
+					this.btnUICount.textContent =
+						String(this.turns).padStart(2, '0');
 
-				modal.close();
-			});
+					this.noMovesLeft = false;
+				},
+
+				() => {
+
+					modal.close();
+
+					startGameplay();
+				}
+
+			);
 		});
 	}
 
@@ -885,8 +904,7 @@ class Memory {
 			card1.isMatched = true;
 			card2.isMatched = true;
 			this.pairsFound++;
-			// if (this.pairsFound === this.cards.length / 2) {
-			if (this.pairsFound === 1) {
+			if (this.pairsFound === this.cards.length / 2) {
 				this.isGameOver = true;
 				setTimeout(function () {
 					let eventWinner = new CustomEvent('winnerLevel', {
@@ -950,39 +968,57 @@ function createElement(html) {
 	div.innerHTML = html;
 	return div.firstElementChild;
 };
-const turnsByLevel = [2, 46, 44, 43, 42, 41, 40, 39, 38, 37, 36, 35];
+const turnsByLevel = [48, 46, 44, 43, 42, 41, 40, 39, 38, 37, 36, 35];
 
-function gameplayStart() {
-	if (!window.ysdk || isGameplayActive) return;
+let gameplayPausedByVisibility = false;
 
-	isGameplayActive = true;
+function startGameplay() {
+
+	if (!window.ysdk)
+		return;
+
+	if (gameplayStarted && !gameplayStopped)
+		return;
+
+	gameplayStarted = true;
+	gameplayStopped = false;
+
 	window.ysdk.features.GameplayAPI.start();
+}
+
+function stopGameplay() {
+
+	if (!window.ysdk)
+		return;
+
+	if (!gameplayStarted)
+		return;
+
+	if (gameplayStopped)
+		return;
+
+	gameplayStopped = true;
+
+	window.ysdk.features.GameplayAPI.stop();
 }
 
 document.addEventListener('visibilitychange', () => {
 
 	if (document.hidden) {
 
-		if (isGameplayActive) {
+		if (!gameplayStopped) {
 			gameplayPausedByVisibility = true;
-			gameplayStop();
+			stopGameplay();
 		}
 
 	} else {
 
 		if (gameplayPausedByVisibility) {
 			gameplayPausedByVisibility = false;
-			gameplayStart();
+			startGameplay();
 		}
 	}
 });
-
-function gameplayStop() {
-	if (!window.ysdk || !isGameplayActive) return;
-
-	isGameplayActive = false;
-	window.ysdk.features.GameplayAPI.stop();
-}
 
 function start() {
 	clearProgress();
@@ -1191,6 +1227,7 @@ if (savedGame) {
 		levels = 12;
 
 		game = new MemoryGame(arrSetCards);
+		game.totalTurnsUsed = totalTurnsUsed;
 
 		const loader = new Loader();
 		loader.show();
@@ -1245,7 +1282,7 @@ if (savedGame) {
 
 document.addEventListener('winnerLevel', () => {
 	if (window.ysdk) {
-		window.ysdk.features.GameplayAPI.stop();
+		stopGameplay();
 	}
 	soundManager.playWin();
 	let rank = '"Новичок"';
@@ -1282,9 +1319,11 @@ document.addEventListener('winnerLevel', () => {
 
 	if (((levels - arrSetCards.length) + 1) == levels) {
 		clearProgress();
-		let x = document.querySelector('.btn-new');
-		let y = document.querySelector('.modal__btn');
-		x.style.display = 'block';
-		y.remove();
+
+		const btnNew = document.querySelector('.btn-new');
+		btnNew.style.display = 'block';
+
+		document.querySelector('.btn-next')?.closest('.modal__btn')?.remove();
+		document.querySelector('.btn-again')?.closest('.modal__btn')?.remove();
 	}
 });

@@ -34,7 +34,8 @@ body,
 }
 
 .wrapper {
-  height: 100vh;
+  height: 100dvh;
+  min-height: 100dvh;
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
@@ -47,6 +48,8 @@ body,
 }
 
 .modal {
+  width: 100dvw;
+  height: 100dvh;
   position: fixed;
   inset: 0;
   z-index: 999;
@@ -59,10 +62,10 @@ body,
   -webkit-box-pack: center;
       -ms-flex-pack: center;
           justify-content: center;
-  padding: 15px;
+  padding: clamp(8px, 2vh, 15px);
   -webkit-box-sizing: border-box;
           box-sizing: border-box;
-  overflow-y: auto;
+  overflow-y: hidden;
   -webkit-animation: scale-up-center 0.4s cubic-bezier(0.39, 0.575, 0.565, 1) both;
           animation: scale-up-center 0.4s cubic-bezier(0.39, 0.575, 0.565, 1) both;
 }
@@ -109,7 +112,7 @@ body,
   -webkit-box-shadow: 0px 60px 80px 0px rgba(0, 0, 0, 0.6), 0px 45px 26px 0px rgba(0, 0, 0, 0.14);
           box-shadow: 0px 60px 80px 0px rgba(0, 0, 0, 0.6), 0px 45px 26px 0px rgba(0, 0, 0, 0.14);
   width: min(700px, 95vw);
-  max-height: 95vh;
+  max-height: calc(100dvh - clamp(16px, 4vh, 30px));
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
@@ -242,6 +245,23 @@ body,
 .modal__btn-insert.btn-new {
   display: none;
   background-color: rgb(220, 85, 32);
+}
+@media (max-height: 700px) {
+  .modal__title {
+    font-size: clamp(22px, 4vh, 34px);
+    padding-top: 6px;
+  }
+  .modal__text {
+    padding: 10px 0;
+    font-size: clamp(16px, 2.8vh, 22px);
+  }
+  .modal__btn-insert {
+    padding: 10px;
+    font-size: 18px;
+  }
+  .modal__body {
+    padding: 12px;
+  }
 }
 @media (max-width: 600px) {
   .modal__btn {
