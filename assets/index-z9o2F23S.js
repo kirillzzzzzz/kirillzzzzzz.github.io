@@ -114,5 +114,29 @@ texCoord = mod(texCoord, 1.0) * outFrame.zw + outFrame.xy;`},disable:!!e}}},8378
 			">
 			MAIN.JS STARTED
 		</div>
-	`),console.log(`🚨 MAIN.JS STARTED`);var Q=`CANVAS-TEST-01`,$=document.createElement(`pre`);$.style.position=`fixed`,$.style.left=`10px`,$.style.top=`10px`,$.style.zIndex=`999999`,$.style.margin=`0`,$.style.padding=`10px`,$.style.background=`rgba(0, 0, 0, 0.85)`,$.style.color=`#00ff00`,$.style.fontFamily=`monospace`,$.style.fontSize=`12px`,$.style.lineHeight=`1.4`,$.style.whiteSpace=`pre-wrap`,$.style.maxWidth=`calc(100vw - 20px)`,$.style.pointerEvents=`none`,document.body.appendChild($);function ie(e){$.textContent+=`${e}\n`}ie(`BUILD: ${Q}`),ie(`URL: ${location.href}`),ie(`UA: ${navigator.userAgent}`),ie(`Touch: ${`ontouchstart`in window}`),ie(`Viewport: ${window.innerWidth} x ${window.innerHeight}`),ie(`DPR: ${window.devicePixelRatio}`),console.log(`🧪 Treasure Hunter build: ${Q}`),console.group(`🔍 Treasure Hunter startup — ${Q}`),console.log(`Browser:`,navigator.userAgent),console.log(`Platform:`,navigator.platform),console.log(`Touch:`,`ontouchstart`in window),console.log(`Screen:`,{width:window.innerWidth,height:window.innerHeight,devicePixelRatio:window.devicePixelRatio}),console.log(`WebGL:`,{webgl:!!document.createElement(`canvas`).getContext(`webgl`),webgl2:!!document.createElement(`canvas`).getContext(`webgl2`)}),console.groupEnd(),window.addEventListener(`error`,e=>{ie(`ERROR: ${e.message}`),console.group(`❌ JavaScript error`),console.error(`Message:`,e.message),console.error(`File:`,e.filename),console.error(`Line:`,e.lineno),console.error(`Column:`,e.colno),console.error(`Error:`,e.error),console.groupEnd()}),window.addEventListener(`unhandledrejection`,e=>{ie(`PROMISE ERROR: ${e.reason}`),console.group(`❌ Promise error`),console.error(`Reason:`,e.reason),console.groupEnd()});var ae={type:X.CANVAS,width:800,height:600,backgroundColor:`#222`,scale:{mode:X.Scale.RESIZE,autoCenter:X.Scale.CENTER_BOTH},physics:{default:`arcade`,arcade:{debug:!1}},scene:[re]};new X.Game(ae),ie(`PHASER: Game created`);
-//# sourceMappingURL=index-CmGmcsLG.js.map
+	`),console.log(`🚨 MAIN.JS STARTED`);var Q=`CANVAS-TEST-01`,$=document.createElement(`pre`);$.style.position=`fixed`,$.style.left=`10px`,$.style.top=`10px`,$.style.zIndex=`999999`,$.style.margin=`0`,$.style.padding=`10px`,$.style.background=`rgba(0, 0, 0, 0.85)`,$.style.color=`#00ff00`,$.style.fontFamily=`monospace`,$.style.fontSize=`12px`,$.style.lineHeight=`1.4`,$.style.whiteSpace=`pre-wrap`,$.style.maxWidth=`calc(100vw - 20px)`,$.style.pointerEvents=`none`,document.body.appendChild($);function ie(e){$.textContent+=`${e}\n`}ie(`BUILD: ${Q}`),ie(`URL: ${location.href}`),ie(`UA: ${navigator.userAgent}`),ie(`Touch: ${`ontouchstart`in window}`),ie(`Viewport: ${window.innerWidth} x ${window.innerHeight}`),ie(`DPR: ${window.devicePixelRatio}`),console.log(`🧪 Treasure Hunter build: ${Q}`),console.group(`🔍 Treasure Hunter startup — ${Q}`),console.log(`Browser:`,navigator.userAgent),console.log(`Platform:`,navigator.platform),console.log(`Touch:`,`ontouchstart`in window),console.log(`Screen:`,{width:window.innerWidth,height:window.innerHeight,devicePixelRatio:window.devicePixelRatio}),console.log(`WebGL:`,{webgl:!!document.createElement(`canvas`).getContext(`webgl`),webgl2:!!document.createElement(`canvas`).getContext(`webgl2`)}),console.groupEnd(),window.addEventListener(`error`,e=>{ie(`ERROR: ${e.message}`),console.group(`❌ JavaScript error`),console.error(`Message:`,e.message),console.error(`File:`,e.filename),console.error(`Line:`,e.lineno),console.error(`Column:`,e.colno),console.error(`Error:`,e.error),console.groupEnd()}),window.addEventListener(`unhandledrejection`,e=>{ie(`PROMISE ERROR: ${e.reason}`),console.group(`❌ Promise error`),console.error(`Reason:`,e.reason),console.groupEnd()});var ae={type:X.CANVAS,width:800,height:600,backgroundColor:`#222`,scale:{mode:X.Scale.RESIZE,autoCenter:X.Scale.CENTER_BOTH},physics:{default:`arcade`,arcade:{debug:!1}},scene:[re]};try{let e=Object.getOwnPropertyDescriptor(Navigator.prototype,`vibrate`);throw document.body.innerHTML=`
+        <pre style="
+            background:#000;
+            color:#00ff00;
+            padding:30px;
+            font:18px monospace;
+            white-space:pre-wrap;
+        ">
+VIBRATION TEST
+
+navigator.vibrate:
+${String(navigator.vibrate)}
+
+writable:
+${String(e?.writable)}
+
+configurable:
+${String(e?.configurable)}
+
+getter:
+${typeof e?.get}
+
+setter:
+${typeof e?.set}
+        </pre>
+    `,Error(`VIBRATION TEST STOP`)}catch(e){console.log(e)}try{navigator&&`vibrate`in navigator&&(console.log(`📳 Vibration API:`,navigator.vibrate),console.log(`📳 navigator.vibrate descriptor:`,Object.getOwnPropertyDescriptor(Navigator.prototype,`vibrate`)))}catch(e){console.log(`📳 Vibration check error:`,e)}try{let e=Object.getOwnPropertyDescriptor(Navigator.prototype,`vibrate`);console.log(`📳 Vibration writable:`,e?.writable),console.log(`📳 Vibration configurable:`,e?.configurable),console.log(`📳 Vibration getter:`,typeof e?.get),console.log(`📳 Vibration setter:`,typeof e?.set)}catch(e){console.log(`📳 Descriptor error:`,e)}new X.Game(ae),ie(`PHASER: Game created`);
