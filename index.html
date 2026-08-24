@@ -12,7 +12,7 @@
 
 <body>
 
-	<div id="html-debug" style="
+	<div id="early-debug" style="
 		position: fixed;
 		left: 10px;
 		top: 10px;
@@ -21,9 +21,43 @@
 		background: black;
 		color: #00ff00;
 		font: 16px monospace;
+		white-space: pre-wrap;
 	">
-		HTML LOADED
+		HTML: START
 	</div>
+
+	<script>
+		const earlyDebug = document.getElementById('early-debug');
+
+		function earlyLog(message) {
+			earlyDebug.textContent += '\n' + message;
+		}
+
+		earlyLog('INLINE SCRIPT: OK');
+
+		window.addEventListener('error', (event) => {
+			earlyLog(
+				'ERROR: ' +
+				(event.message || 'unknown error')
+			);
+
+			if (event.target && event.target.tagName) {
+				earlyLog(
+					'TARGET: ' +
+					event.target.tagName +
+					' ' +
+					(event.target.src || '')
+				);
+			}
+		});
+
+		window.addEventListener('unhandledrejection', (event) => {
+			earlyLog(
+				'PROMISE ERROR: ' +
+				String(event.reason)
+			);
+		});
+	</script>
 
 
 	<div id="app"></div>
