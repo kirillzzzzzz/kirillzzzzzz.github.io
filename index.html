@@ -36,10 +36,26 @@
 		earlyLog('INLINE SCRIPT: OK');
 
 		window.addEventListener('error', (event) => {
+			earlyLog('ERROR: ' + (event.message || 'unknown error'));
+
 			earlyLog(
-				'ERROR: ' +
-				(event.message || 'unknown error')
+				'FILE: ' +
+				(event.filename || 'unknown')
 			);
+
+			earlyLog(
+				'LINE: ' +
+				(event.lineno || 'unknown') +
+				' COL: ' +
+				(event.colno || 'unknown')
+			);
+
+			if (event.error && event.error.stack) {
+				earlyLog(
+					'STACK:\n' +
+					event.error.stack
+				);
+			}
 
 			if (event.target && event.target.tagName) {
 				earlyLog(
